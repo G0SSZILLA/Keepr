@@ -1,0 +1,75 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\source\\codeworks\\keepr\\keepr.csproj": {}
+  },
+  "projects": {
+    "C:\\source\\codeworks\\keepr\\keepr.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\source\\codeworks\\keepr\\keepr.csproj",
+        "projectName": "keepr",
+        "projectPath": "C:\\source\\codeworks\\keepr\\keepr.csproj",
+        "packagesPath": "C:\\Users\\gossm\\.nuget\\packages\\",
+        "outputPath": "C:\\source\\codeworks\\keepr\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\gossm\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[3.1.1, )"
+            },
+            "MySqlConnector": {
+              "target": "Package",
+              "version": "[0.59.2, )"
+            },
+            "dapper": {
+              "target": "Package",
+              "version": "[2.0.30, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.201\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
