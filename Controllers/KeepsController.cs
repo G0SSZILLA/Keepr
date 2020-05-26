@@ -20,8 +20,6 @@ namespace Keepr.Controllers
         {
             _ks = ks;
         }
-
-        // NOTE Gets all keeps
         [HttpGet]
         public ActionResult<IEnumerable<Keep>> Get()
         {
@@ -35,40 +33,23 @@ namespace Keepr.Controllers
             };
         }
 
-        // NOTE Gets keeps by ID
         [HttpGet("{id}")]
-        public ActionResult<IEnumerable<Keep>> Get(int id)
+        public ActionResult<Keep> Get(int id)
         {
             try
             {
-                return Ok(_ks.Get(id));
+                return Ok(_ks.GetById(id));
             }
             catch (Exception e)
             {
-                return BadRequest(e.Message);
-            };
-        }
 
-        // NOTE Gets User Keeps
-        [HttpGet("userId")]
-        [Authorize]
-        public ActionResult<IEnumerable<Keep>> GetUserKeeps()
-        {
-            try
-            {
-                string userId = HttpContext.User.FindFirstValue("Id");
-                return Ok(_ks.GetUserKeeps(userId));
-            }
-            catch (Exception e)
-            {
                 return BadRequest(e.Message);
             }
         }
 
-        // NOTE Creates new keep
         [HttpPost]
         [Authorize]
-        public ActionResult<Keep> Post([FromBody] Keep newKeep)
+        public ActionResult<Keep> Create([FromBody] Keep newKeep)
         {
             try
             {
@@ -82,23 +63,9 @@ namespace Keepr.Controllers
             }
         }
 
-        //NOTE Update a keep
+        [HttpPut("{id}")]
         [Authorize]
-        [HttpPut("{keepId}")]
-        public ActionResult<Keep> Put(int keepId, [FromBody] Keep editKeep)
-        {
-            try
-            {
-                editKeep.Id = keepId;
-                return Ok(_ks.Edit(editKeep));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
 
-// NOTE Delete keep by ID
         [HttpDelete("{id}")]
         [Authorize]
         public ActionResult<String> Delete(int id)
@@ -114,6 +81,18 @@ namespace Keepr.Controllers
                 return BadRequest(e.Message);
             }
         }
+        public ActionResult<Keep> Edit([FromBody] Keep update, int id)
+        {
+            try
+            {
+                update.Id = id;
+                return Ok(_ks.Edit(update));
+            }
+            catch (Exception e)
+            {
 
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

@@ -1,0 +1,5 @@
+C:\source\codeworks\keepr\obj\Debug\netcoreapp3.1\keepr.csprojAssemblyReference.cache
+C:\source\codeworks\keepr\obj\Debug\netcoreapp3.1\keepr.csproj.CoreCompileInputs.cache
+C:\source\codeworks\keepr\obj\Debug\netcoreapp3.1\keepr.MvcApplicationPartsAssemblyInfo.cache
+C:\source\codeworks\keepr\obj\Debug\netcoreapp3.1\keepr.AssemblyInfoInputs.cache
+C:\source\codeworks\keepr\obj\Debug\netcoreapp3.1\keepr.AssemblyInfo.cs

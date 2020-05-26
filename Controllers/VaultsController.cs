@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Keepr.Controllers
 {
+    [ApiController]
     [Route("api/[controller]")]
     public class VaultsController : ControllerBase
     {
@@ -20,38 +21,37 @@ namespace Keepr.Controllers
             _vs = vs;
         }
 
-        // NOTE Gets vaults
         [HttpGet]
         [Authorize]
         public ActionResult<IEnumerable<Vault>> Get()
         {
             try
             {
-                string userId = HttpContext.User.FindFirstValue("Id");
+                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                // return Ok(_vs.Get());
+
                 return Ok(_vs.Get(userId));
             }
             catch (Exception e)
             {
                 return BadRequest(e.Message);
-            }
+            };
         }
-
-        // NOTE Gets vault by ID
-        [HttpGet("{vaultId}")]
+        [HttpGet("{id}")]
         [Authorize]
-        public ActionResult<Vault> Get(int vaultId)
+        public ActionResult<Vault> GetById(int id)
         {
             try
             {
-                return Ok(_vs.Get(vaultId));
+                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                return Ok(_vs.GetById(id, userId));
             }
             catch (Exception e)
             {
+
                 return BadRequest(e.Message);
             }
         }
-
-        // NOTE Adds Vaults
         [HttpPost]
         [Authorize]
         public ActionResult<Vault> Create([FromBody] Vault newVault)
@@ -62,22 +62,20 @@ namespace Keepr.Controllers
                 newVault.UserId = userId;
                 return Ok(_vs.Create(newVault));
             }
-            catch (Exception error)
+            catch (Exception e)
             {
-
-                return BadRequest(error.Message);
+                return BadRequest(e.Message);
             }
         }
 
-        // NOTE Edits a vault
-        [HttpPut("{vaultId}")]
+        [HttpDelete("{id}")]
         [Authorize]
-        public ActionResult<Vault> Put(int vaultId, [FromBody] Vault editVault)
+        public ActionResult<String> Delete(int id)
         {
             try
             {
-                editVault.Id = vaultId;
-                return Ok(_vs.Edit(editVault));
+                return Ok(_vs.Delete(id));
+
             }
             catch (Exception e)
             {
@@ -85,23 +83,20 @@ namespace Keepr.Controllers
                 return BadRequest(e.Message);
             }
         }
-
-        // NOTE Deletes vault
-        [HttpDelete("{vaultId}")]
+        [HttpPost("{id}")]
         [Authorize]
-        public ActionResult<string> Delete(int vaultId)
+        public ActionResult<Vault> Edit([FromBody] Vault update, int id)
         {
             try
             {
-                string userId = HttpContext.User.FindFirstValue("id");
-               return Ok(_vs.Remove(vaultId, userId));
+                update.Id = id;
+                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                return Ok(_vs.Edit(update));
             }
             catch (Exception e)
             {
-
                 return BadRequest(e.Message);
             }
         }
-
     }
 }
