@@ -20,17 +20,14 @@ namespace Keepr.Controllers
         {
             _vs = vs;
         }
-
         [HttpGet]
-        [Authorize]
+        // [Authorize]
         public ActionResult<IEnumerable<Vault>> Get()
         {
             try
             {
-                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                // return Ok(_vs.Get());
-
-                return Ok(_vs.Get(userId));
+                // var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                return Ok(_vs.Get());
             }
             catch (Exception e)
             {
@@ -48,7 +45,6 @@ namespace Keepr.Controllers
             }
             catch (Exception e)
             {
-
                 return BadRequest(e.Message);
             }
         }

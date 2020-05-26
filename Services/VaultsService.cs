@@ -9,14 +9,12 @@ namespace Keepr.Services
     public class VaultsService
     {
         private readonly VaultsRepository _repo;
-        public VaultsService(VaultsRepository vr)
-        {
-            _repo = vr;
-        }
-        internal IEnumerable<Vault> Get(string userId)
+        public VaultsService(VaultsRepository vr) => _repo = vr;
+        
+        public IEnumerable<Vault> Get()
         {
          
-            return _repo.Get(userId);
+            return _repo.Get();
         }
         internal Vault GetById(int id, string userId)
         {
