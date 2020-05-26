@@ -35,19 +35,18 @@ namespace Keepr.Controllers
     }
     [HttpPost]
     [Authorize]
-    public ActionResult<VaultKeep> Post([FromBody] VaultKeep newData )
+
+    public ActionResult<VaultKeep> Create([FromBody] VaultKeep newData)
     {
       try
       {
-        newData.UserId = userId;
-        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        ;
         return Ok(_vks.Create(newData));
       }
-      catch (Exception e)
+      catch (System.Exception err)
       {
-        return BadRequest(e.Message);
+        return BadRequest(err.Message);
       }
+
     }
 
     [HttpDelete("{vaultId}/Keeps/{keepId}")]
