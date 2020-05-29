@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using Keepr.Models;
 using Keepr.Repositories;
 
@@ -8,37 +9,43 @@ namespace Keepr.Services
   public class VaultKeepsService
   {
     private readonly VaultKeepsRepository _repo;
-
-    public VaultKeepsService(VaultKeepsRepository repo) => _repo = repo;
-   
-    
-    public IEnumerable<VaultKeep> Get()
+    public VaultKeepsService(VaultKeepsRepository repo)
     {
-      return _repo.Get();
-    }
-    public IEnumerable<Keep> GetKeepsByVaultId(int vaultId, string userId)
-    {
-      var exists = _repo.GetKeepsByVaultId(vaultId, userId);
-      if (exists == null) { throw new Exception("This is not the droid you're looking for"); }
-      return exists;
+      _repo = repo;
     }
 
-    internal object Create(VaultKeep newData)
+ public VaultKeep Create(VaultKeep newVaultKeep)
     {
-
-      newData.Id = _repo.Create(newData);
-      return newData;
+      return _repo.Create(newVaultKeep);
     }
 
-    public string Delete(int vaultId, int keepId, string userId)
+    public IEnumerable<VaultKeep> Get(string userId)
     {
-      var exists = _repo.GetById(vaultId, keepId, userId);
-      if (exists == null)
+      return _repo.Get(userId);
+    }
+
+    public VaultKeep GetOne(int id)
+    {
+      VaultKeep foundVaultKeep = _repo.GetOne(id);
+      if (foundVaultKeep == null)
       {
-        throw new Exception("Invalid request");
+        throw new Exception("Invalid Id");
       }
-      _repo.Delete(vaultId, keepId, userId);
-      return "Successfully Deleted";
+      return foundVaultKeep;
+    }
+
+      public IEnumerable<VaultKeepViewModel> GetKeepsByVaultId(int id)
+    {
+      return _repo.GetKeepsByVaultId(id);
+    }
+
+    internal string Delete(int id)
+    {
+      if (_repo.Delete(id))
+      {
+        return ("Successfully deleted!");
+      }
+      throw new Exception("Delete unsuccessful");
     }
   }
 }

@@ -4,22 +4,31 @@ import Router from "vue-router";
 import Home from "./views/Home.vue";
 // @ts-ignore
 import Dashboard from "./views/Dashboard.vue";
+// @ts-ignore
+import KeepDetails from "./views/KeepDetails.vue";
 import { authGuard } from "@bcwdev/auth0-vue";
 
 Vue.use(Router);
 
 export default new Router({
-  routes: [
-    {
-      path: "/",
-      name: "home",
-      component: Home
-    },
-    {
-      path: "/dashboard",
-      name: "dashboard",
-      component: Dashboard,
-      beforeEnter: authGuard
-    }
-  ]
+    routes: [{
+            path: "/",
+            name: "home",
+            component: Home,
+        },
+
+        {
+            path: "/dashboard",
+            name: "dashboard",
+            component: Dashboard,
+            beforeEnter: authGuard,
+        },
+
+        {
+            path: "/keeps/:keepId",
+            name: "KeepDetails",
+            component: KeepDetails,
+            beforeEnter: authGuard,
+        },
+    ],
 });

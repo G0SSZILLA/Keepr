@@ -11,59 +11,65 @@ using Microsoft.Extensions.Logging;
 
 namespace Keepr.Controllers
 {
-  [ApiController]
-  [Route("api/[controller]")]
-  public class VaultKeepsController : ControllerBase
-  {
-    private readonly VaultKeepsService _vks;
-    public VaultKeepsController(VaultKeepsService vks) => _vks = vks;
-    
-
-    [HttpGet("{vaultId}/Keeps")]
-    [Authorize]
-    public ActionResult<IEnumerable<Keep>> Get(int vaultId)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class VaultKeepsController : ControllerBase
     {
-      try
-      {
-        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        return Ok(_vks.GetKeepsByVaultId(vaultId, userId));
-      }
-      catch (Exception e)
-      {
-        return BadRequest(e.Message);
-      }
+        private readonly VaultKeepsService _vks;
+        public VaultKeepsController(VaultKeepsService vks)
+        {
+            _vks = vks;
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult<VaultKeep> Create([FromBody] VaultKeep newVaultKeep)
+        {
+            try
+            {
+                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                newVaultKeep.UserId = userId;
+                return Ok(_vks.Create(newVaultKeep));
+            }
+            catch (System.Exception error)
+            {
+                return BadRequest(error.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet]
+        public ActionResult<IEnumerable<VaultKeep>> Get()
+        {
+            try
+            {
+                Claim user = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (user == null)
+                {
+                    throw new Exception("You must be logged in!");
+                }
+                string userId = user.Value;
+
+                return Ok(_vks.Get(userId));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            };
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public ActionResult<string> Delete(int id)
+        {
+            try
+            {
+                return Ok(_vks.Delete(id));
+            }
+            catch (System.Exception error)
+            {
+                return BadRequest(error.Message);
+            }
+        }
     }
-    [HttpPost]
-    [Authorize]
-
-    public ActionResult<VaultKeep> Create([FromBody] VaultKeep newData)
-    {
-      try
-      {
-        return Ok(_vks.Create(newData));
-      }
-      catch (System.Exception err)
-      {
-        return BadRequest(err.Message);
-      }
-
-    }
-
-    [HttpDelete("{vaultId}/Keeps/{keepId}")]
-    [Authorize]
-    public ActionResult<String> Delete(int vaultId, int keepId)
-    {
-      try
-      {
-        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        return Ok(_vks.Delete(vaultId, keepId, userId));
-      }
-      catch (Exception e)
-      {
-
-        return BadRequest(e.Message); ;
-      }
-    }
-
-  }
 }

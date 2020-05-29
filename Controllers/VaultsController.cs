@@ -16,41 +16,16 @@ namespace Keepr.Controllers
     public class VaultsController : ControllerBase
     {
         private readonly VaultsService _vs;
-        public VaultsController(VaultsService vs)
+        private readonly VaultKeepsService _vks;
+        public VaultsController(VaultsService vs, VaultKeepsService vks)
         {
             _vs = vs;
+            _vks = vks;
         }
-        [HttpGet]
-        // [Authorize]
-        public ActionResult<IEnumerable<Vault>> Get()
-        {
-            try
-            {
-                // var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                return Ok(_vs.Get());
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            };
-        }
-        [HttpGet("{id}")]
-        [Authorize]
-        public ActionResult<Vault> GetById(int id)
-        {
-            try
-            {
-                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                return Ok(_vs.GetById(id, userId));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
+
         [HttpPost]
         [Authorize]
-        public ActionResult<Vault> Create([FromBody] Vault newVault)
+        public ActionResult<Vault> Post([FromBody] Vault newVault)
         {
             try
             {
@@ -64,35 +39,73 @@ namespace Keepr.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet]
+        public ActionResult<IEnumerable<Vault>> Get()
+        {
+            try
+            {
+                Claim user = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (user == null)
+                {
+                    throw new Exception("You must be logged in!");
+                }
+                string userId = user.Value;
+                return Ok(_vs.Get(userId));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            };
+        }
+
+        [Authorize]
+        [HttpGet("{id}/keeps")]
+        public ActionResult<IEnumerable<VaultKeepViewModel>> GetKeepsByVaultId(int id)
+        {
+            try
+            {
+                return Ok(_vks.GetKeepsByVaultId(id));
+            }
+            catch (System.Exception err)
+            {
+                return BadRequest(err.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("{id}")]
+        public ActionResult<Vault> GetOne(int id)
+        {
+            try
+            {
+                return Ok(_vs.GetOne(id));
+            }
+            catch (System.Exception err)
+            {
+                return BadRequest(err.Message);
+            }
+        }
+
+        [Authorize]
         [HttpDelete("{id}")]
-        [Authorize]
-        public ActionResult<String> Delete(int id)
+        public ActionResult<string> Delete(int id)
         {
             try
             {
-                return Ok(_vs.Delete(id));
-
+                Claim user = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (user == null)
+                {
+                    throw new Exception("you must be logged in to delete");
+                }
+                string userId = user.Value;
+                return Ok(_vs.Delete(id, userId));
             }
-            catch (Exception e)
+            catch (System.Exception error)
             {
-
-                return BadRequest(e.Message);
+                return BadRequest(error.Message);
             }
         }
-        [HttpPost("{id}")]
-        [Authorize]
-        public ActionResult<Vault> Edit([FromBody] Vault update, int id)
-        {
-            try
-            {
-                update.Id = id;
-                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                return Ok(_vs.Edit(update));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
+
     }
 }

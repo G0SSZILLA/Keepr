@@ -6,64 +6,55 @@ using Dapper;
 
 namespace Keepr.Repositories
 {
-  public class VaultKeepsRepository
-  {
-    private readonly IDbConnection _db;
-
-    public VaultKeepsRepository(IDbConnection db)
+    public class VaultKeepsRepository
     {
-      _db = db;
-    }
+        private readonly IDbConnection _db;
 
-    public IEnumerable<VaultKeep> Get()
-    {
-      string sql = "SELECT * FROM vaultkeeps WHERE isPrivate = 0;";
-      return _db.Query<VaultKeep>(sql);
-    }
-    public VaultKeep GetById(int id)
-    {
-      string sql = "SELECT * FROM vaultkeeps WHERE id = @id";
-      return _db.QueryFirstOrDefault<VaultKeep>(sql, new { id });
+        public VaultKeepsRepository(IDbConnection db)
+        {
+            _db = db;
+        }
+
+        internal VaultKeep Create(VaultKeep vaultKeepData)
+        {
+            string sql = @"
+        INSERT INTO vaultkeeps
+        (userId, vaultId, keepId)
+        VALUES
+        (@UserId, @VaultId, @KeepId);
+        SELECT LAST_INSERT_ID()";
+            vaultKeepData.Id = _db.ExecuteScalar<int>(sql, vaultKeepData);
+            return vaultKeepData;
+        }
+
+        internal IEnumerable<VaultKeep> Get(string userId)
+        {
+            string sql = "SELECT * FROM vaultkeeps WHERE userid = @userId";
+            return _db.Query<VaultKeep>(sql, new { userId });
+        }
+        internal VaultKeep GetOne(int id)
+        {
+            string sql = "SELECT * FROM vaultkeeps WHERE id = @Id";
+            return _db.QueryFirstOrDefault<VaultKeep>(sql, new { id });
+        }
+
+        internal IEnumerable<VaultKeepViewModel> GetKeepsByVaultId(int id)
+        {
+            string sql = @"SELECT 
+        k.*,
+        vk.id as vaultKeepId
+        FROM vaultkeeps vk
+        INNER JOIN keeps k ON k.id = vk.keepId 
+        WHERE (vaultId = @Id)";
+            return _db.Query<VaultKeepViewModel>(sql, new { id });
+        }
+
+        internal bool Delete(int id)
+        {
+            string sql = "DELETE FROM vaultkeeps WHERE id = @id LIMIT 1";
+            int affectedRows = _db.Execute(sql, new { id });
+            return affectedRows == 1;
+        }
 
     }
-    internal VaultKeep GetById(int vaultId, int keepId, string userId)
-    {
-      string sql = @"SELECT * FROM vaultkeeps WHERE vaultId = @VaultId AND keepId = @KeepId AND userId = @UserId";
-      return _db.QueryFirstOrDefault<VaultKeep>(sql, new { vaultId, keepId, userId });
-    }
-
-    internal IEnumerable<Keep> GetKeepsByVaultId(int vaultId, string userId)
-    {
-      string sql = @"
-      SELECT k.* FROM vaultkeeps vk
-      INNER JOIN keeps k ON k.id = vk.keepId 
-      WHERE (vk.vaultId = @VaultId AND vk.userId = @UserId)
-      ";
-      return _db.Query<Keep>(sql, new { vaultId, userId });
-    }
-
-    internal VaultKeep Find(int vaultId, int keepId)
-    {
-      string sql = "SELECT * FROM vaultkeeps WHERE (VaultId = @vaultId AND KeepId = @keepId)";
-      return _db.QueryFirstOrDefault(sql, new { vaultId, keepId });
-    }
-
-
-    internal int Create(VaultKeep newData)
-    {
-      string sql = @"
-            INSERT INTO vaultkeeps (vaultId, keepId, userId) VALUES (@VaultId, @KeepId, @UserId);
-            SELECT LAST_INSERT_ID();";
-      int id = _db.ExecuteScalar<int>(sql, newData);
-      // newData.Id = id;
-      return id;
-    }
-
-
-    internal void Delete(int vaultId, int keepId, string userId)
-    {
-      string sql = @"DELETE FROM vaultkeeps WHERE vaultId = @vaultId AND keepId = @keepId AND userId = @userId LIMIT 1";
-      _db.Execute(sql, new { vaultId, keepId, userId });
-    }
-  }
 }

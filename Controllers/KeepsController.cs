@@ -20,6 +20,27 @@ namespace Keepr.Controllers
         {
             _ks = ks;
         }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult<Keep> Post([FromBody] Keep newKeep)
+        {
+            try
+            {
+                Claim user = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (user == null)
+                {
+                    throw new Exception("you must be logged in to Post");
+                }
+                newKeep.UserId = user.Value;
+                return Ok(_ks.Create(newKeep));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpGet]
         public ActionResult<IEnumerable<Keep>> Get()
         {
@@ -33,65 +54,70 @@ namespace Keepr.Controllers
             };
         }
 
+        [HttpGet("user")]
+        public ActionResult<IEnumerable<Keep>> GetUserKeeps()
+        {
+            try
+            {
+                Claim user = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (user == null)
+                {
+                    throw new Exception("not the right user");
+                }
+                string userId = user.Value;
+                return Ok(_ks.GetUserKeeps(userId));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            };
+        }
+
         [HttpGet("{id}")]
-        public ActionResult<Keep> Get(int id)
+        public ActionResult<Keep> GetOne(int id)
         {
             try
             {
-                return Ok(_ks.GetById(id));
+                return Ok(_ks.GetOne(id));
             }
-            catch (Exception e)
+            catch (System.Exception err)
             {
-
-                return BadRequest(e.Message);
+                return BadRequest(err.Message);
             }
         }
 
-        [HttpPost]
-        [Authorize]
-        public ActionResult<Keep> Create([FromBody] Keep newKeep)
-        {
-            try
-            {
-                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                newKeep.UserId = userId;
-                return Ok(_ks.Create(newKeep));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
 
-        [HttpPut("{id}")]
-        [Authorize]
+         [HttpPut("{id}")]
+    public ActionResult<Keep> Edit(int id, [FromBody] Keep keepToUpdate)
+    {
+      keepToUpdate.Id = id;
+      try
+      {
+        return Ok(_ks.Edit(keepToUpdate));
+      }
+      catch (System.Exception err)
+      {
+        return BadRequest(err.Message);
+      }
+    }
 
+        [Authorize]
         [HttpDelete("{id}")]
-        [Authorize]
-        public ActionResult<String> Delete(int id)
+        public ActionResult<string> Delete(int id)
         {
             try
             {
-                return Ok(_ks.Delete(id));
-
+                Claim user = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (user == null)
+                {
+                    throw new Exception("you must be logged in to delete");
+                }
+                string userId = user.Value;
+                return Ok(_ks.Delete(id, userId));
             }
-            catch (Exception e)
+            catch (System.Exception error)
             {
-
-                return BadRequest(e.Message);
-            }
-        }
-        public ActionResult<Keep> Edit([FromBody] Keep update, int id)
-        {
-            try
-            {
-                update.Id = id;
-                return Ok(_ks.Edit(update));
-            }
-            catch (Exception e)
-            {
-
-                return BadRequest(e.Message);
+                return BadRequest(error.Message);
             }
         }
     }

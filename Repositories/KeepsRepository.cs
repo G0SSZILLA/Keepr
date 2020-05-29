@@ -6,48 +6,99 @@ using Dapper;
 
 namespace Keepr.Repositories
 {
-  public class KeepsRepository
-  {
-    private readonly IDbConnection _db;
+    public class KeepsRepository
+    {
+        private readonly IDbConnection _db;
 
-    public KeepsRepository(IDbConnection db)
-    {
-      _db = db;
-    }
+        public KeepsRepository(IDbConnection db)
+        {
+            _db = db;
+        }
 
-    internal IEnumerable<Keep> Get()
-    {
-      string sql = "SELECT * FROM keeps;";
-      return _db.Query<Keep>(sql);
-    }
-    internal Keep GetById(int Id)
-    {
-      string sql = "SELECT * FROM keeps WHERE id = @Id";
-      return _db.QueryFirstOrDefault<Keep>(sql, new { Id });
-    }
+        internal Keep Create(Keep KeepData)
+        {
+            string sql = @"
+        INSERT INTO keeps
+        (userId, name, description, img, isPrivate, views, shares, keeps)
+        VALUES
+        (@UserId, @Name, @Description, @Img, @IsPrivate, @Views, @Shares, @Keeps);
+        SELECT LAST_INSERT_ID()";
+            KeepData.Id = _db.ExecuteScalar<int>(sql, KeepData);
+            return KeepData;
+        }
 
-    internal Keep Create(Keep keepData)
-    {
-      string sql = @"
-            INSERT INTO keeps (name, description, img, isPrivate) VALUES (@Name, @Description, @Img, @IsPrivate);
-            SELECT LAST_INSERT_ID();";
-      int id = _db.ExecuteScalar<int>(sql, keepData);
-      keepData.Id = id;
-      return keepData;
-    }
-    internal void Edit(Keep update)
+        
+
+        internal bool AddKeep(Keep KeepData)
+        {
+            string sql = @"
+          UPDATE keeps SET
+          keeps = keeps + 1
+          WHERE id = @Id LIMIT 1";
+            int affectedRows = _db.Execute(sql, new { KeepData.Id });
+            return affectedRows == 1;
+        }
+
+        internal bool AddShare(Keep KeepData)
+        {
+            string sql = @"
+          UPDATE keeps SET
+          shares = shares + 1
+          WHERE id = @Id LIMIT 1";
+            int affectedRows = _db.Execute(sql, new { KeepData.Id });
+            return affectedRows == 1;
+        }
+
+        internal bool UpdateViewCount(Keep KeepData)
+        {
+            string sql = @"
+          UPDATE keeps SET
+          views = views + 1
+          WHERE id = @Id LIMIT 1";
+            int affectedRows = _db.Execute(sql, new { KeepData.Id });
+            return affectedRows == 1;
+        }
+
+        internal bool UpdateKeptCount(Keep keepToUpdate)
     {
       string sql = @"
       UPDATE keeps
-      SET name = @Name
+      SET keeps = keeps + 1
       WHERE id = @Id";
-      _db.Execute(sql, update);
+      int affectedRows = _db.Execute(sql, keepToUpdate);
+      return affectedRows == 1;
     }
-    internal void Delete(int id)
-    {
-      string sql = "DELETE FROM keeps WHERE id = @id";
-      _db.Execute(sql, new { id });
-    }
+        internal IEnumerable<Keep> Get()
+        {
+            string sql = "SELECT * FROM keeps WHERE isPrivate = 0";
+            return _db.Query<Keep>(sql);
+        }
 
-  }
+        internal IEnumerable<Keep> GetKeepsByVaultId(string userId)
+        {
+            string sql = "SELECT * FROM keeps WHERE userid = @UserId";
+            return _db.Query<Keep>(sql, new { userId });
+        }
+
+        internal IEnumerable<Keep> GetUserKeeps(string userId)
+        {
+            string sql = "SELECT * FROM keeps WHERE userid = @UserId";
+             return _db.Query<Keep>(sql, new { userId });
+        }
+        internal Keep GetOne(int id)
+        {
+            string sql = "SELECT * FROM keeps WHERE id = @Id";
+            return _db.QueryFirstOrDefault<Keep>(sql, new { id });
+        }
+
+        internal bool Delete(int id, string userId)
+        {
+            string sql = "DELETE FROM keeps WHERE id = @Id AND userId = @UserId LIMIT 1";
+            int affectedRows = _db.Execute(sql, new { id, userId });
+            return affectedRows == 1;
+        }
+
+
+
+    }
 }

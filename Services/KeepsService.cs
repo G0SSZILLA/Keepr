@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,49 +6,85 @@ using Keepr.Repositories;
 
 namespace Keepr.Services
 {
-  public class KeepsService
-  {
-    private readonly KeepsRepository _repo;
-    public KeepsService(KeepsRepository kr)
+    public class KeepsService
     {
-      _repo = kr;
-    }
-    internal IEnumerable<Keep> Get()
-    {
-      return _repo.Get();
-    }
+        private readonly KeepsRepository _repo;
+        public KeepsService(KeepsRepository repo)
+        {
+            _repo = repo;
+        }
 
-    internal Keep GetById(int id)
-    {
-      var exists = _repo.GetById(id);
-      if (exists == null) { throw new Exception("Invalid ID"); }
-      return exists;
-    }
-    public Keep Create(Keep newKeep)
-    {
-      _repo.Create(newKeep);
-      return newKeep;
-    }
-    internal Keep Edit(Keep update)
-    {
-      Keep exists = _repo.GetById(update.Id);
-      if (exists == null)
-      {
-        throw new Exception("Invalid Id");
-      }
-      _repo.Edit(update);
-      return update;
-    }
+        public Keep Create(Keep newKeep)
+        {
+            return _repo.Create(newKeep);
+        }
 
-    internal object Delete(int id)
-    {
-      var exists = _repo.GetById(id);
-      if (exists == null)
-      {
-        throw new Exception("Invalid ID");
-      }
-      _repo.Delete(id);
-      return "Successfully Deleted";
+        public IEnumerable<Keep> Get()
+        {
+            return _repo.Get();
+        }
+
+        internal IEnumerable<Keep> GetKeepsByVaultId(string userId)
+        {
+            return _repo.GetKeepsByVaultId(userId);
+        }
+
+        internal IEnumerable<Keep> GetUserKeeps(string userId)
+        {
+            return _repo.GetUserKeeps(userId);
+        }
+
+        public Keep GetOne(int id)
+        {
+            Keep foundKeep = _repo.GetOne(id);
+            if (foundKeep == null)
+            {
+                throw new Exception("Invalid Id");
+            }
+            return foundKeep;
+        }
+
+
+        public Keep Edit(Keep keepToUpdate)
+        {
+            Keep foundKeep = GetOne(keepToUpdate.Id);
+            if (foundKeep != null)
+            {
+                if (foundKeep.Views < keepToUpdate.Views)
+                {
+                    if (_repo.UpdateViewCount(foundKeep))
+                    {
+                        return foundKeep;
+                    }
+                    return foundKeep;
+                }
+
+                if (foundKeep.Keeps < keepToUpdate.Keeps)
+                {
+                    if (_repo.UpdateKeptCount(foundKeep))
+                    {
+                        return foundKeep;
+                    }
+                    return foundKeep;
+                }
+            }
+            throw new Exception("Unable to edit.");
+        }
+
+        internal string Delete(int id, string userId)
+        {
+            Keep foundKeep = GetOne(id);
+            if (foundKeep.UserId != userId)
+            {
+                throw new Exception("This is not your keep!");
+            }
+            if (_repo.Delete(id, userId))
+            {
+                return "Sucessfully deleted.";
+            }
+            throw new Exception("Delete failed");
+        }
+
+
     }
-  }
 }
