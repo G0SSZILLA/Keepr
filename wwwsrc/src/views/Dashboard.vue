@@ -1,7 +1,6 @@
 <template>
   <div class="dashboard container-fluid">
     <h1>Vaults</h1>
-    <h2 class="col-6 text-center">Create a Vault</h2>
     <CreateVault class="col-6" v-show="this.$auth.user"></CreateVault>
     <div class="row">
       <div class="col-6">
